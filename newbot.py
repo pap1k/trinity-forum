@@ -3,7 +3,7 @@ import requests, re, time, datetime, xmltodict, vk, sys, html, antiddos
 
 LASTID = 0
 PROCESSING = {}
-DELAY = 180
+DELAY = 240
 
 def date(unixtime, format = '%d.%m.%Y %H:%M:%S'):
     d = datetime.datetime.fromtimestamp(unixtime)
@@ -177,9 +177,14 @@ while True:
         log("ok")
         sys.exit(1)
     except requests.exceptions.RequestException as ex:
-        if PROCESSING['id'] != LASTID:
-            vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"Произошла ошибка обратотки поста {PROCESSING['id']} в теме {PROCESSING['title']}, связанная с ошибкой подколчюения к форуму ({str(ex)}). держу в курсе."})
+        try:
+            if PROCESSING['id'] != LASTID:
+                vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"Произошла ошибка обратотки поста {PROCESSING['id']} в теме {PROCESSING['title']}, связанная с ошибкой подколчюения к форуму ({str(ex)}). Посмотрите вручную."})
+        except KeyError:
+            pass
         log("Request error: "+str(ex))
+    except Exception as ex:
+        log('Uncaught exception: '+str(ex))
     # except Exception as ex:
     #     open("lastheml.html", "w", encoding='utf-8').write(ghtml.text)
     #     forum = Forum()
