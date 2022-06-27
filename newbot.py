@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup as bs
 import requests, re, time, datetime, xmltodict, vk, sys, html, antiddos
-from .logging import get_logger
+from .logger import get_logger
 
 
 logger = get_logger(__name__)
