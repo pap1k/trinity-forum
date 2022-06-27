@@ -173,7 +173,7 @@ while True:
             logger.info(f'\n{dots}\nPosted "{title}" post_id = "{str(post_id)}\n{dots}\n\n')
         time.sleep(DELAY)
     except KeyboardInterrupt:
-        logger.debug(f'{"\n"*3}Выходим.')
+        logger.debug(f'\n\nВыходим.')
         sys.exit(1)
     except requests.exceptions.RequestException as ex:
 <<<<<<< HEAD
