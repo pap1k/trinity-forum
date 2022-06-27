@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 
 LASTID = 0
 PROCESSING = {}
-DELAY = 240
+DELAY = 180
 
 def date(unixtime, format = '%d.%m.%Y %H:%M:%S'):
     d = datetime.datetime.fromtimestamp(unixtime)
@@ -176,20 +176,9 @@ while True:
         logger.debug(f'\n\nВыходим.')
         sys.exit(1)
     except requests.exceptions.RequestException as ex:
-<<<<<<< HEAD
-        try:
-            if PROCESSING['id'] != LASTID:
-                vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"Произошла ошибка обратотки поста {PROCESSING['id']} в теме {PROCESSING['title']}, связанная с ошибкой подколчюения к форуму ({str(ex)}). Посмотрите вручную."})
-        except KeyError:
-            pass
-        log("Request error: "+str(ex))
-    except Exception as ex:
-        log('Uncaught exception: '+str(ex))
-=======
         if PROCESSING['id'] != LASTID:
             vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"Произошла ошибка обратотки поста {PROCESSING['id']} в теме {PROCESSING['title']}, связанная с ошибкой подколчюения к форуму ({str(ex)}). держу в курсе."})
         logger.warning(f'Request error: {str(ex)}')
->>>>>>> 54a1853521af5b0121637e0b5a1d7d4565c78765
     # except Exception as ex:
     #     open("lastheml.html", "w", encoding='utf-8').write(ghtml.text)
     #     forum = Forum()
