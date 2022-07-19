@@ -17,6 +17,5 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SECRET_KEY }}
         port: ${{ secrets.PORT }}
-        script: |
-          whoami
-          ls -al
+        script: cd ~/deploy_scripts && source trinity-forum.sh
+          
