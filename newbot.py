@@ -1,5 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import requests, re, time, datetime, xmltodict, vk, sys, html, antiddos
+from logger import get_logger
+
+
+logger = get_logger(__name__)
 
 LASTID = 0
 PROCESSING = {}
@@ -8,9 +12,6 @@ DELAY = 180
 def date(unixtime, format = '%d.%m.%Y %H:%M:%S'):
     d = datetime.datetime.fromtimestamp(unixtime)
     return d.strftime(format)
-
-def log(text):
-    print('['+date(time.time())+']: '+str(text))
 
 def getAta4(subforums):
     for i in range(len(subforums)-1, 0, -1):
@@ -45,10 +46,10 @@ class Forum:
     s.proxies = {'http': 'socks5h://127.0.0.1:9050','https': 'socks5h://127.0.0.1:9050'}
     def __init__(self):
         index = self.s.get('https://gta-trinity.ru/forum/').text
-        log("Установлено подключение.")
+        logger.info('Установлено подключение.')
         #if "REACTLABSPROTECTION" in index:
         ddos_code = antiddos.get(index)
-        log("ddos code: "+ddos_code)
+        logger.debug(f'ddos code: {ddos_code}')
         cookies = dict(
             name='REACTLABSPROTECTION',
             value=ddos_code,
@@ -57,7 +58,7 @@ class Forum:
             expires=2145916555,
             rest = {'hostOnly':True}
         )
-        log("Установлен обход. Начинается парсинг.")
+        logger.info('Установлен обход. Начинается парсинг.')
         self.s.cookies.set(**cookies)
     def html(self):
         return self.s.get("https://gta-trinity.ru:443/forum/index.php?/discover/8.xml/", timeout=20)
@@ -66,7 +67,7 @@ class Forum:
         return self.s.get(link, timeout=20)
 forum = Forum()
 posted_ids = open("posts.txt", "r").read().split(",")
-news_names = ['nyūsu', 'novedad', 'NOTIZIA', '𝐍𝐞𝐰𝐬', 'новост', 'notizie', 'news','noticias', 'новый лидер', 'выговоры лидеров', 'жалобы на хелперов', 'претензии к работе администраторов', 'на лидеров фракций, банд,', 'передачу постов', 'поощрения лидерам и хелперам']
+news_names = ['nyūsu', 'novedad', 'NOTIZIA', '𝐍𝐞𝐰𝐬', 'новост', 'ньюс', 'notizie', 'news','noticias', 'новый лидер', 'выговоры лидеров', 'жалобы на хелперов', 'претензии к работе администраторов', 'на лидеров фракций, банд,', 'передачу постов', 'поощрения лидерам и хелперам']
 news_alerts = ['usa na]', 'pa$e news', 'usa news', 'news agency', 'rc news', 'usa:news','af news', 'us news', 'rc:news', 'новостное']
 
 while True:
@@ -74,12 +75,12 @@ while True:
         ghtml = forum.html()
         #print(ghtml.text)
         if not ghtml:
-            log("Форум сдох: "+str(ghtml))
+            logger.error(f'Форум сдох: {str(ghtml)}')
             continue
         try:
             xml = xmltodict.parse(ghtml.text, encoding='utf-8')
         except:
-            log("Не удалось спарсить XML. Переподключение...")
+            logger.info(f'Не удалось спарсить XML. Переподключение...')
             forum = Forum()
             continue
         for post in xml['rss']['channel']['item']:
@@ -168,18 +169,16 @@ while True:
             vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"В отложке новый пост:\n\n{tag}\n{title}\n\n{post['link']}"})
             #vk.vk_r("messages.send", {"peer_id": 218999719, "message": f"В отложке новый пост:\n\n{tag}\n{title}\n\n{post['link']}"})
             
-            print(":::::::::::::::::::::::::::::::::::::::")
-            log("Posted \""+title+"\" post_id = "+str(post_id))
-            print(":::::::::::::::::::::::::::::::::::::::\n")
+            dots = ':::::::::::::::::::::::::::::::::::::::'
+            logger.info(f'\n{dots}\nPosted "{title}" post_id = "{str(post_id)}\n{dots}\n\n')
         time.sleep(DELAY)
     except KeyboardInterrupt:
-        print()
-        log("ok")
+        logger.debug(f'\n\nВыходим.')
         sys.exit(1)
     except requests.exceptions.RequestException as ex:
         if PROCESSING['id'] != LASTID:
             vk.vk_r("messages.send", {"peer_id": vk.PROD_CONV_PEER, "message": f"Произошла ошибка обратотки поста {PROCESSING['id']} в теме {PROCESSING['title']}, связанная с ошибкой подколчюения к форуму ({str(ex)}). держу в курсе."})
-        log("Request error: "+str(ex))
+        logger.warning(f'Request error: {str(ex)}')
     # except Exception as ex:
     #     open("lastheml.html", "w", encoding='utf-8').write(ghtml.text)
     #     forum = Forum()
